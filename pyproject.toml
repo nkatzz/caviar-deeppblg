@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "caviar-deepproblog"
+version = "0.1.0"
+description = ""
+authors = ["nickmanginas <nickmanginas@gmail.com>"]
+readme = "README.md"
+packages = [{include = "caviar_deepproblog"}]
+
+[tool.poetry.dependencies]
+python = "=3.10.0"
+torchvision = "0.13.1"
+deepproblog = "^2.0.4"
+pydotplus = "^2.0.2"
+
+
+[tool.poetry.group.dev.dependencies]
+debugpy = "^1.6.7"
+black = "^23.3.0"
+graphviz = "^0.20.1"
+matplotlib = "^3.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
