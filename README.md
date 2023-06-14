@@ -15,7 +15,7 @@ steps, i.e. 1, 2, 3, 4, 5 will start building circuits to infer the query probab
 unbearably large very soon because each consecutive circuit contains the previous as a subcircuit. This all follow from the 
 recursive definition of the inertia law in Event Calculus.
 
-| Query | T = 1 | T = 2 | T = 3 | T = 4 | T = 5 | T = 6 | T = 7 | T = 8 | T = 9 | T = 10 | T = 11 | T = 12 | T = 13 |
+| Time | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
 | `holdsAt(tensor(train, 0), meeting(p1, p2), T)` | 0 | 1 | 24 | 112 | 245 | 604 | 1304 | 3590 | 7955 | 25774 | 67106 | 199023 | 462658 |
 
