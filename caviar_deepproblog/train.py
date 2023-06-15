@@ -1,3 +1,4 @@
+from deepproblog.model import Model
 import torch
 from deepproblog.network import Network
 from deepproblog.train import train_model
@@ -23,8 +24,8 @@ model.set_engine(ExactEngine(model))
 model.add_tensor_source("train", CaviarVideos(fold_data["train"]["videos"]))
 model.add_tensor_source("test", CaviarVideos(fold_data["test"]["videos"]))
 
-train_dataset = CaviarDataset(fold_data["train"]["labels"])
-test_dataset = CaviarDataset(fold_data["test"]["labels"])
+train_dataset = CaviarDataset(fold_data["train"]["labels"], complex_event="moving")
+test_dataset = CaviarDataset(fold_data["test"]["labels"], complex_event="moving")
 loader = DataLoader(train_dataset, 1, False)
 
 
