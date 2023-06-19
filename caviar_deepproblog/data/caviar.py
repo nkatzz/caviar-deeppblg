@@ -5,6 +5,7 @@ import torch
 from deepproblog.dataset import Dataset
 
 complex_event_mapping = {"nointeraction": 0, "meeting": 1, "moving": 2}
+inverse_complex_event_mapping = {0: "nointeraction", 1: "meeting", 2: "moving"}
 
 
 class CaviarVideos(Mapping[Term, torch.Tensor]):
@@ -42,11 +43,14 @@ class CaviarDataset(Dataset):
             i % self.complex_event_labels.shape[1],
         )
 
+        CE_label = inverse_complex_event_mapping[self.complex_event_labels[video_id][timestep_number].item()]
+
         return Query(
             Term(
                 "holdsAt",
                 Term("tensor", Term(self.subset_name, Constant(video_id))),
-                Term(self.complex_event, Term("p1"), Term("p2")),
+                #Term(self.complex_event, Term("p1"), Term("p2")),
+                Term(CE_label, Term('p1'), Term('p2')),
                 Constant(timestep_number),
             ),
             p=(

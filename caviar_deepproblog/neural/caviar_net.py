@@ -39,7 +39,7 @@ class CaviarNet(torch.nn.Module):
         elif personID.functor == "p2":
             # For the second person ignore the last feature since it is the distance.
             # We use it elsewhere no need for the NN to take it into account.
-            lstm_input = video_tensor[:, 5:-1]
+            lstm_input = video_tensor[:, 5:-2]
         else:
             raise ValueError("Parameter 'personID' should be either p1 or p2")
 

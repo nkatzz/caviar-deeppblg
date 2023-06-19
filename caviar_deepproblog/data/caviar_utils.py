@@ -1,20 +1,27 @@
-from collections import defaultdict, Counter
+from collections import defaultdict
 import torch
 import pickle
-import re
 
+pickle_path = "/home/blackbeard/Documents/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl"
 
 with open(
-    # "/home/whatever/programms/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
-    "/home/yuzer/ncsr/dpl-benchmark/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
+    pickle_path,
     "rb",
 ) as data_file:
     caviar_folds = pickle.load(data_file)
 
+import re
 
-def load_fold(fold_id: int) -> dict[str, dict[str, torch.Tensor]]:
+caviar_folds["fold1"]["train"][0]["atoms"]
+
+
+def load_fold(
+    fold_id: int, close_threshold_value: int = 25
+) -> dict[str, dict[str, torch.Tensor]]:
     if fold_id not in range(1, 4):
         raise RuntimeError("There are only three folds with ids 1, 2, 3")
+
+    caviar_folds["fold2"]["train"][0]["concat_tensor"][:, :, 10].min()
 
     fold_data = defaultdict(dict)
 
@@ -47,8 +54,38 @@ def load_fold(fold_id: int) -> dict[str, dict[str, torch.Tensor]]:
             ]
         )
 
+        person_one_orientation = torch.Tensor(
+            [
+                [
+                    int(x)
+                    for x in re.findall(
+                        r'orientation\(p1,(\d+)',
+                        datapoint['atoms']
+                    )
+                ]
+                for datapoint in split_data
+            ]
+        )
+        
+        person_two_orientation = torch.Tensor(
+            [
+                [
+                    int(x)
+                    for x in re.findall(
+                        r'orientation\(p2,(\d+)',
+                        datapoint['atoms']
+                    )
+                ]
+                for datapoint in split_data
+            ]
+        )
+
         euclidean_distances = (
             ((person_one_coords - person_two_coords) ** 2).sum(-1).sqrt()
+        ).unsqueeze(-1)
+
+        orientation = (
+            (person_one_orientation - person_two_orientation).abs()
         ).unsqueeze(-1)
 
         fold_input = torch.stack(
@@ -64,7 +101,8 @@ def load_fold(fold_id: int) -> dict[str, dict[str, torch.Tensor]]:
             ]
         )
 
-        with_distance_feature = torch.cat((fold_input, euclidean_distances), dim=-1)
+        with_orientation_feature = torch.cat((fold_input, orientation), dim=-1)
+        with_distance_feature = torch.cat((with_orientation_feature, euclidean_distances), dim=-1)
 
         complex_events_labels = torch.stack(
             [
@@ -72,7 +110,7 @@ def load_fold(fold_id: int) -> dict[str, dict[str, torch.Tensor]]:
                 for example_id in range(len(split_data))
             ]
         ).squeeze(-1)
-        fold_data[key]["videos"] = fold_input
+        fold_data[key]["videos"] = with_distance_feature
         fold_data[key]["labels"] = complex_events_labels
 
     return fold_data
