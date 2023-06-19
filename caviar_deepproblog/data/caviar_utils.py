@@ -5,14 +5,16 @@ import re
 
 
 with open(
-    # "/home/whatever/programms/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
-    "/home/yuzer/ncsr/dpl-benchmark/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
+    "/home/whatever/programms/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
+    # "/home/yuzer/ncsr/dpl-benchmark/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
     "rb",
 ) as data_file:
     caviar_folds = pickle.load(data_file)
 
 
-def load_fold(fold_id: int) -> dict[str, dict[str, torch.Tensor]]:
+def load_fold(
+    fold_id: int, close_threshold_value: int = 25
+) -> dict[str, dict[str, torch.Tensor]]:
     if fold_id not in range(1, 4):
         raise RuntimeError("There are only three folds with ids 1, 2, 3")
 
@@ -72,7 +74,7 @@ def load_fold(fold_id: int) -> dict[str, dict[str, torch.Tensor]]:
                 for example_id in range(len(split_data))
             ]
         ).squeeze(-1)
-        fold_data[key]["videos"] = fold_input
+        fold_data[key]["videos"] = with_distance_feature
         fold_data[key]["labels"] = complex_events_labels
 
     return fold_data
