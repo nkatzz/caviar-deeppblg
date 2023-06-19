@@ -23,7 +23,8 @@ network = Network(caviar_net, "caviar_net")
 network.optimizer = torch.optim.Adam(caviar_net.parameters(), lr=0.001)
 
 model = MarkovModel(
-    "/home/whatever/programms/caviar-deepproblog/caviar_deepproblog/problog_files/caviar.pl",
+    # "/home/whatever/programms/caviar-deepproblog/caviar_deepproblog/problog_files/caviar.pl",
+    "/home/yuzer/ncsr/dpl-benchmark/caviar-deepproblog/caviar_deepproblog/problog_files/caviar.pl",
     [network],
 )
 model.set_engine(ExactEngine(model))
@@ -31,7 +32,9 @@ model.add_tensor_source("train", CaviarVideos(fold_data["train"]["videos"]))
 model.add_tensor_source("test", CaviarVideos(fold_data["test"]["videos"]))
 
 train_dataset = CaviarDataset(fold_data["train"]["labels"], complex_event="meeting")
-test_dataset = CaviarDataset(fold_data["test"]["labels"], complex_event="meeting")
+test_dataset = CaviarDataset(
+    fold_data["test"]["labels"], complex_event="meeting", is_train=False
+)
 loader = DataLoader(train_dataset, 1, False)
 
 
