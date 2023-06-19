@@ -2,17 +2,17 @@ import copy
 from typing import Sequence
 from deepproblog.query import Query
 from problog.logic import Term, Constant
-from .model import Model, Result
-import re
+from deepproblog.model import Model, Result
+
 
 class MarkovModel(Model):
     def solve(self, batch: Sequence[Query]) -> list[Result]:
         result = super().solve(batch)
         (body, probability) = list(result[0].result.items())[0]
         program = copy.deepcopy(self.program)
-        
+
         program.add_fact(
-                Term(
+            Term(
                 "previous_step",
                 *body.args,
                 p=Constant(
@@ -35,7 +35,7 @@ class MarkovModel(Model):
 
         program.add_fact(
             Term(
-                'orientation',
+                "orientation",
                 body.args[0],
                 *body.args[1].args,
                 body.args[2],
@@ -52,6 +52,6 @@ class MarkovModel(Model):
                 "no solver assigned. This will never happen. It is for the type checker"
             )
         self.solver.program = self.solver.engine.prepare(program)
-        print('===============================')
+        print("===============================")
         print(list(program))
         return result

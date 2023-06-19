@@ -4,6 +4,7 @@ from deepproblog.train import train_model
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_fact_accuracy
+from caviar_deepproblog.markov_models.graph_semiring import BoundEntropySemiring
 from markov_models.markov_model import MarkovModel
 from data.caviar_utils import load_fold
 from neural.caviar_net import CaviarNet
@@ -23,11 +24,12 @@ caviar_net = CaviarNet(4, 5, 128, 1)
 network = Network(caviar_net, "caviar_net")
 network.optimizer = torch.optim.Adam(caviar_net.parameters(), lr=0.001)
 
+
 model = MarkovModel(
     problog_path,
     [network],
 )
-model.set_engine(ExactEngine(model))
+model.set_engine(ExactEngine(model), semiring=BoundEntropySemiring)
 model.add_tensor_source("train", CaviarVideos(fold_data["train"]["videos"]))
 model.add_tensor_source("test", CaviarVideos(fold_data["test"]["videos"]))
 
@@ -36,6 +38,6 @@ test_dataset = CaviarDataset(fold_data["test"]["labels"], complex_event="meeting
 loader = DataLoader(train_dataset, 1, False)
 
 train_model(model, loader, 5, loss_function_name="cross_entropy")
-model.save_state('snapshot/model.sve')
+model.save_state("snapshot/model.sve")
 
 print(get_fact_accuracy(model, test_dataset))
