@@ -1,8 +1,9 @@
 import torch
+import torch.nn as nn
 from problog.logic import Constant, Term
 
 
-class CaviarNet(torch.nn.Module):
+class CaviarNet(nn.Module):
     def __init__(
         self, num_classes: int, input_size: int, hidden_size: int, num_layers: int
     ):
@@ -12,18 +13,18 @@ class CaviarNet(torch.nn.Module):
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
-        self.lstm = torch.nn.LSTM(
+        self.lstm = nn.LSTM(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             batch_first=True,
         )
 
-        self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(in_features=hidden_size, out_features=128),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=128, out_features=num_classes),
-            torch.nn.Softmax(dim=1),
+        self.mlp = nn.Sequential(
+            nn.Linear(in_features=hidden_size, out_features=128),
+            nn.ReLU(),
+            nn.Linear(in_features=128, out_features=num_classes),
+            nn.Softmax(dim=1),
         )
 
     def forward(self, video_tensor: torch.Tensor, personID: Term, timestep: Constant):
@@ -55,3 +56,26 @@ class CaviarNet(torch.nn.Module):
         # within the same LSTM evaluation). For this reason, each forward pass returns
         # only a single timestep from the entire generated output. Wasteful and sad.
         return output[int(timestep)]
+
+
+class CaviarCNN(nn.Module):
+    def __init__(self, num_classes):
+        super().__init__()
+        self.conv1 = nn.Conv2d(3, 8, (3, 3))
+        self.conv2 = nn.Conv2d(8, 16, (3, 3))
+        self.conv3 = nn.Conv2d(16, 32, (3, 3))
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(in_features=32 * 8 * 8, out_features=128)
+        self.fc2 = nn.Linear(in_features=128, out_features=num_classes)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        x = self.pool(self.relu(self.conv1(x)))
+        x = self.pool(self.relu(self.conv2(x)))
+        x = self.pool(self.relu(self.conv3(x)))
+        x = torch.flatten(x, 1)
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+
+        return self.softmax(x)
