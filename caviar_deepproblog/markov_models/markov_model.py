@@ -1,15 +1,45 @@
 import copy
-from typing import Sequence
 from deepproblog.query import Query
 from problog.logic import Term, Constant
 from deepproblog.model import Model, Result
+from typing import (
+    Collection,
+    Optional,
+    Sequence,
+    Union,
+)
+from deepproblog.network import Network
+import os
+from deepproblog.embeddings import TermEmbedder
+from time import time
 
 
 class MarkovModel(Model):
+
+    def __init__(self,
+                 program_string: Union[str, os.PathLike],
+                 networks: Collection[Network],
+                 embeddings: Optional[TermEmbedder] = None,
+                 load: bool = True):
+        self.ac_total_time = 0  # Grounding + AC compilation + solving time
+        self.deep_copy_time = 0
+        super(MarkovModel, self).__init__(program_string, networks, embeddings=embeddings, load=load)
+
     def solve(self, batch: Sequence[Query]) -> list[Result]:
         result = super().solve(batch)
+
+        self.ac_total_time += result[0].ground_time + result[0].compile_time + result[0].eval_time
+        # print(self.ac_total_time)
+
         (body, probability) = list(result[0].result.items())[0]
+
+        start = time()
         program = copy.deepcopy(self.program)
+        end = time()
+        self.deep_copy_time += end - start
+
+        # print(self.ac_total_time + self.deep_copy_time)
+
         program.add_fact(
             Term(
                 "previous_step",
@@ -21,6 +51,7 @@ class MarkovModel(Model):
                 ),
             )
         )
+
         program.add_fact(
             Term(
                 "distance",
@@ -28,6 +59,16 @@ class MarkovModel(Model):
                 *body.args[1].args,
                 body.args[2],
                 Constant(self.get_tensor(body.args[0])[int(body.args[2])][-1].item()),
+            )
+        )
+
+        program.add_fact(
+            Term(
+                "orientation",
+                body.args[0],
+                *body.args[1].args,
+                body.args[2],
+                Constant(self.get_tensor(body.args[0])[int(body.args[2])][-2].item()),
             )
         )
 
@@ -40,5 +81,6 @@ class MarkovModel(Model):
                 "no solver assigned. This will never happen. It is for the type checker"
             )
         self.solver.program = self.solver.engine.prepare(program)
-        print(list(program))
+        # print("===============================")
+        # print(list(program))
         return result

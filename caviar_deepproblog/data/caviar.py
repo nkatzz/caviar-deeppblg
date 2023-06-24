@@ -5,6 +5,7 @@ import torch
 from deepproblog.dataset import Dataset
 
 complex_event_mapping = {"nointeraction": 0, "meeting": 1, "moving": 2}
+inverse_complex_event_mapping = {0: "nointeraction", 1: "meeting", 2: "moving"}
 
 
 class CaviarVideos(Mapping[Term, torch.Tensor]):
