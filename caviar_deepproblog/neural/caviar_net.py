@@ -78,4 +78,4 @@ class CaviarCNN(nn.Module):
         x = self.relu(self.fc1(x))
         x = self.relu(self.fc2(x))
 
-        return self.softmax(x)
+        return x
