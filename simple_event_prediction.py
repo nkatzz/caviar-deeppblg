@@ -1,5 +1,6 @@
 import cv2
 import torch
+import numpy as np
 from torcheval.metrics import (
     MulticlassAccuracy,
     MulticlassPrecision,
@@ -9,18 +10,14 @@ from torcheval.metrics import (
 import torchmetrics
 from PIL import Image
 import torch.nn as nn
+import matplotlib.pyplot as plt
 import torch.optim as optimizers
-import torchvision.transforms as T
 from torch.utils.data import Dataset, DataLoader, random_split
 from caviar_deepproblog.data.caviar_vision import (
     CaviarVisionDataset,
     inverse_simple_event_mapping,
 )
 from caviar_deepproblog.neural.caviar_net import CaviarCNN
-
-import numpy as np
-import matplotlib.pyplot as plt
-import torchvision.transforms.functional as F
 
 
 class SupervisedCaviarVision(Dataset):
@@ -104,7 +101,7 @@ if __name__ == "__main__":
         desired_image_size=(85, 85),
     )
 
-    f1_torcheval = MulticlassF1Score(num_classes=4)
+    # f1_torcheval = MulticlassF1Score(num_classes=4)
     f1_torchmetrics = torchmetrics.F1Score(task="multiclass", num_classes=4)
 
     train_data, test_data = random_split(dataset, [0.8, 0.2])
@@ -132,23 +129,12 @@ if __name__ == "__main__":
 
         print(f"done \t train loss: {round(epoch_loss, 3)}")
 
-        # # with torch.no_grad():
-        # cnn.eval()
-        # for test_inputs, test_labels in test_dl:
-        #     test_outputs = cnn(test_inputs)
+    cnn.eval()
+    for test_inputs, test_labels in test_dl:
+        test_outputs = cnn(test_inputs)
+        f1_metrics = f1_torchmetrics(test_outputs, test_labels)
 
-        #     f1_torcheval.update(outputs, labels)
-        #     f1_metrics = f1_torchmetrics(outputs, labels)
-
-        # f1_eval = f1_torcheval.compute()
-        # f1_metrics = f1_torchmetrics.compute()
-        # print(
-        #     f"\tTrain loss: {round(epoch_loss, 3)}",
-        #     f"\ttest F1 (torcheval): {round(f1_eval.item(), 3)}",
-        #     f"\ttest F1 (torchmetrics): {round(f1_metrics.item(), 3)}",
-        # )
-
-        # f1_torcheval.reset()
-        # f1_torchmetrics.reset()
-
-    print()
+    f1_metrics = f1_torchmetrics.compute()
+    print(
+        f"\ttest F1 (torchmetrics): {round(f1_metrics.item(), 3)}",
+    )
