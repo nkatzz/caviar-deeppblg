@@ -1,4 +1,4 @@
-nn(caviar_net, [Video, P, T], SE, [active, inactive, walking, running]) :: happensAt(Video, P, T, SE).
+nn(caviar_cnn, [Video, P, T], SE, [active, inactive, walking, running]) :: happensAt(Video, P, T, SE).
 
 holdsAt(Video, F, T) :- previous(T1, T), initiatedAt(F, Video, T1).
 holdsAt(Video, F, T) :- previous(T1, T), previous_step(Video, F, T1), \+terminatedAt(F, Video, T1).
