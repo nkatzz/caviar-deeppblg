@@ -39,8 +39,6 @@ class SupervisedCaviarVision(Dataset):
             ]
         )
 
-        print()
-
     def flatten(self, nested_list):
         # here nested lists have the following shape:
         # (num_sequences x num_timesteps x 2 people x obj)
@@ -101,7 +99,6 @@ if __name__ == "__main__":
         desired_image_size=(85, 85),
     )
 
-    # f1_torcheval = MulticlassF1Score(num_classes=4)
     f1_torchmetrics = torchmetrics.F1Score(task="multiclass", num_classes=4)
 
     train_data, test_data = random_split(dataset, [0.8, 0.2])
@@ -113,6 +110,7 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optimizers.Adam(cnn.parameters(), lr=1e-3)
     num_epochs = 20
+    print("Imma start trainin")
 
     for epoch in range(num_epochs):
         print(f"Epoch {epoch + 1}/{num_epochs} --- ", end="")
@@ -127,7 +125,7 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-        print(f"done \t train loss: {round(epoch_loss, 3)}")
+        print(f"done \t train loss: {round(epoch_loss, 4)}", end="")
 
     cnn.eval()
     for test_inputs, test_labels in test_dl:
@@ -136,5 +134,5 @@ if __name__ == "__main__":
 
     f1_metrics = f1_torchmetrics.compute()
     print(
-        f"\ttest F1 (torchmetrics): {round(f1_metrics.item(), 3)}",
+        f"\ttest F1: {round(f1_metrics.item(), 4)}",
     )

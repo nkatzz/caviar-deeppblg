@@ -2,3 +2,4 @@
 __pycache__/
 caviar_deepproblog/data/vision_data/*
 !caviar_deepproblog/data/vision_data/.gitkeep
+caviar_deepproblog/data/caviar_vision_backup.py
