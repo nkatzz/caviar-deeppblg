@@ -1,8 +1,9 @@
 from collections import defaultdict
 import torch
 import pickle
+import os
 
-pickle_path = "/home/blackbeard/Documents/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl"
+pickle_path = os.getcwd() + "/data/caviar_folds.pkl"
 
 with open(
     pickle_path,
@@ -110,7 +111,7 @@ def load_fold(
                 for example_id in range(len(split_data))
             ]
         ).squeeze(-1)
-        fold_data[key]["videos"] = with_distance_feature
-        fold_data[key]["labels"] = complex_events_labels
+        fold_data[key]["videos"] = with_distance_feature.repeat_interleave(24, dim=0)
+        fold_data[key]["labels"] = complex_events_labels.repeat_interleave(24, dim=0)
 
     return fold_data

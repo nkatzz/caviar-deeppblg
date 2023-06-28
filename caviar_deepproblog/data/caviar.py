@@ -1,6 +1,6 @@
 from typing import Iterator, Mapping
 from deepproblog.query import Query
-from problog.logic import Constant, Term
+from problog.logic import Constant, Term, Var
 import torch
 from deepproblog.dataset import Dataset
 
@@ -52,11 +52,24 @@ class CaviarDataset(Dataset):
                 #Term(self.complex_event, Term("p1"), Term("p2")),
                 Term(CE_label, Term('p1'), Term('p2')),
                 Constant(timestep_number),
-            ),
-            p=(
-                1
-                if self.complex_event_labels[video_id][timestep_number].item()
-                == complex_event_mapping[self.complex_event]
-                else 0
-            ),
+            ))
+    
+    def to_many_queries(self, i:int) -> Query:
+        video_id, timestep_number = (
+            i // self.complex_event_labels.shape[1],
+            i % self.complex_event_labels.shape[1],
         )
+
+        queries = []
+        for ce in complex_event_mapping.keys():
+            queries.append(
+                Query(
+                    Term(
+                        "holdsAt",
+                        Term("tensor", Term(self.subset_name, Constant(video_id))),
+                        #Term(self.complex_event, Term("p1"), Term("p2")),
+                        Term(ce, Term('p1'), Term('p2')),
+                        Constant(timestep_number),
+                    ),
+                ))
+        return queries

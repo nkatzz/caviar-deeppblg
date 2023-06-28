@@ -10,7 +10,6 @@ class MarkovModel(Model):
         result = super().solve(batch)
         (body, probability) = list(result[0].result.items())[0]
         program = copy.deepcopy(self.program)
-
         program.add_fact(
             Term(
                 "previous_step",
@@ -22,26 +21,73 @@ class MarkovModel(Model):
                 ),
             )
         )
-
-        program.add_fact(
-            Term(
-                "distance",
-                body.args[0],
-                *body.args[1].args,
-                body.args[2],
-                Constant(self.get_tensor(body.args[0])[int(body.args[2])][-1].item()),
+        if self.get_tensor(body.args[0])[int(body.args[2])][-1].item() <= 25:
+            program.add_fact(
+                Term(
+                    "is_close",
+                    body.args[0],
+                    *body.args[1].args,
+                    body.args[2],
+                    Constant(25),
+                )
             )
-        )
-
-        program.add_fact(
-            Term(
-                "orientation",
-                body.args[0],
-                *body.args[1].args,
-                body.args[2],
-                Constant(self.get_tensor(body.args[0])[int(body.args[2])][-2].item()),
+            program.add_fact(
+                Term(
+                    "is_close",
+                    body.args[0],
+                    *body.args[1].args,
+                    body.args[2],
+                    Constant(34),
+                )
             )
-        )
+        elif self.get_tensor(body.args[0])[int(body.args[2])][-1].item() <= 34:
+            program.add_fact(
+                Term(
+                    "is_close",
+                    body.args[0],
+                    *body.args[1].args,
+                    body.args[2],
+                    Constant(34),
+                )
+            )
+            program.add_fact(
+                Term(
+                    "far",
+                    body.args[0],
+                    *body.args[1].args,
+                    body.args[2],
+                    Constant(25),
+                )
+            )
+        else:
+            program.add_fact(
+                Term(
+                    "far",
+                    body.args[0],
+                    *body.args[1].args,
+                    body.args[2],
+                    Constant(25),
+                )
+            )
+            program.add_fact(
+                Term(
+                    "far",
+                    body.args[0],
+                    *body.args[1].args,
+                    body.args[2],
+                    Constant(34),
+                )
+            )
+
+        if self.get_tensor(body.args[0])[int(body.args[2])][-2].item() <= 45:
+            program.add_fact(
+                Term(
+                    'orientation',
+                    body.args[0],
+                    *body.args[1].args,
+                    body.args[2],
+                )
+            )
 
         # TODO: The above line can be used to assign the spatial information
         # to the program. However currently all features are normalized which
@@ -52,6 +98,6 @@ class MarkovModel(Model):
                 "no solver assigned. This will never happen. It is for the type checker"
             )
         self.solver.program = self.solver.engine.prepare(program)
-        print("===============================")
-        print(list(program))
+        #print('===============================')
+        #print(list(program))
         return result

@@ -4,7 +4,7 @@ from problog.logic import Constant, Term
 
 class CaviarNet(torch.nn.Module):
     def __init__(
-        self, num_classes: int, input_size: int, hidden_size: int, num_layers: int
+        self, num_classes: int = 4, input_size: int = 5, hidden_size: int = 256, num_layers: int = 2, dropout = 0.3
     ):
         super().__init__()
         self.num_classes = num_classes
@@ -17,12 +17,12 @@ class CaviarNet(torch.nn.Module):
             hidden_size=hidden_size,
             num_layers=num_layers,
             batch_first=True,
+            bidirectional = True,
+            dropout = dropout
         )
 
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(in_features=hidden_size, out_features=128),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=128, out_features=num_classes),
+            torch.nn.Linear(in_features=hidden_size*2, out_features=num_classes),
             torch.nn.Softmax(dim=1),
         )
 
