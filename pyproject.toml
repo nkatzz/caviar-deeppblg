@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "caviar_deepproblog"}]
 
 [tool.poetry.dependencies]
-python = "=3.10.0"
+python = ">=3.10.0"
 torchvision = "0.13.1"
 deepproblog = "^2.0.4"
 pydotplus = "^2.0.2"
@@ -15,6 +15,9 @@ torch = ">=1.12.1"
 opencv-python = "^4.7.0.72"
 black = "^23.3.0"
 torcheval = "^0.0.6"
+rich = "^13.4.2"
+scikit-learn = "^1.2.2"
+torchmetrics = "^0.11.4"
 
 
 [tool.poetry.group.dev.dependencies]

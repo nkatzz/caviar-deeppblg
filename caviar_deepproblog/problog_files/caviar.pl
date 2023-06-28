@@ -1,3 +1,5 @@
+:-consult('caviar_deepproblog/data/vision_data/spatial_info.pl').
+
 nn(caviar_cnn, [Video, P, T], SE, [active, inactive, walking, running]) :: happensAt(Video, P, T, SE).
 
 holdsAt(Video, F, T) :- previous(T1, T), initiatedAt(F, Video, T1).
@@ -28,12 +30,6 @@ terminatedAt(meeting(P1, P2), Video, T) :-
 
 terminatedAt(meeting(P1, P2), Video, T) :- 
     happensAt(Video, P2, T, running).
-
-% terminatedAt(moving(P1, P2), Video, T) :- 
-%     happensAt(Video, P1, T, dissapear).
-% 
-% terminatedAt(moving(P1, P2), Video, T) :- 
-%     happensAt(Video, P2, T, dissapear).
 
 terminatedAt(meeting(P1, P2), Video, T) :- 
     happensAt(Video, P1, T, walking), far(Video, P1, P2, T, 25).

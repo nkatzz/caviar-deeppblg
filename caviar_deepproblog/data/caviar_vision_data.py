@@ -62,13 +62,6 @@ simple_event_mapping = {
     "running": 3,
 }
 
-inverse_simple_event_mapping = {
-    0: "active",
-    1: "inactive",
-    2: "walking",
-    3: "running",
-}
-
 
 @dataclasses.dataclass
 class BoundingBox:
@@ -153,7 +146,8 @@ class Interaction:
 
 class CaviarVisionDataset:
     def __init__(self, window_size, window_stride, preprocess, desired_image_size):
-        self.dataset_root = cache_caviar_raw()
+        # self.dataset_root = cache_caviar_raw()
+        self.dataset_root = "/home/yuzer/.cache/caviar_raw/caviar_videos"
         self.window_size = window_size
         self.window_stride = window_stride
         self.preprocess = preprocess
@@ -185,6 +179,9 @@ class CaviarVisionDataset:
 
             if preprocess:
                 self.preprocess_images(desired_image_size)
+
+            # write distances between persons to a file to be read by logical part
+            self.write_spatial_info_to_file()
 
             # save data in a file so that it won't have to be generated again in
             # the future if the settings (window_size, window_stride) are the same
@@ -425,3 +422,26 @@ class CaviarVisionDataset:
             )
             for image_pair in self.input_images
         ]
+
+    def write_spatial_info_to_file(self):
+        bb_features = torch.Tensor(self.bb_features)
+
+        distances = (
+            (bb_features[:, :, 2:4] - bb_features[:, :, 7:9]).pow(2).sum(-1).sqrt()
+        )
+
+        file_path = "caviar_deepproblog/data/vision_data/spatial_info.pl"
+        with open(file_path, "w") as distances_file:
+            for sequence in range(bb_features.shape[0]):
+                for timestep in range(bb_features.shape[1]):
+                    distances_file.write(
+                        "distance({}, p1, p2, {}, {:.3f}).".format(
+                            sequence,
+                            timestep,
+                            distances[sequence, timestep],
+                        )
+                        + "\n"
+                    )
+
+        # ignore orientation for now. It doesn't seem to be used for meeting anyway
+        # orientation_difference = (bb_features[:, :, 4] - bb_features[:, :, 9]).abs()

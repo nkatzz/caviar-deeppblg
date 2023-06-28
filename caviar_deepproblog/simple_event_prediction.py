@@ -13,31 +13,25 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import torch.optim as optimizers
 from torch.utils.data import Dataset, DataLoader, random_split
-from caviar_deepproblog.data.caviar_vision import (
-    CaviarVisionDataset,
-    inverse_simple_event_mapping,
-)
-from caviar_deepproblog.neural.caviar_net import CaviarCNN
+from caviar_deepproblog.data.caviar_vision_data import CaviarVisionDataset
+from caviar_deepproblog.neural.caviar_net import SupervisedCaviarCNN
+from rich.progress import track
 
 
 class SupervisedCaviarVision(Dataset):
-    def __init__(self, dataset_root, window_size, window_stride, desired_image_size):
+    def __init__(self, window_size, window_stride, desired_image_size):
         vision_dataset = CaviarVisionDataset(
-            dataset_root=dataset_root,
             window_size=window_size,
             window_stride=window_stride,
+            preprocess=True,
+            desired_image_size=desired_image_size,
         )
 
         self.simple_event_labels = torch.Tensor(
             self.flatten(vision_dataset.simple_event_labels)
         ).type(torch.LongTensor)
 
-        self.input_images = torch.stack(
-            [
-                self.preprocess_image(image, desired_image_size)
-                for image in self.flatten(vision_dataset.input_images)
-            ]
-        )
+        self.input_images = torch.stack(self.flatten(vision_dataset.input_images))
 
     def flatten(self, nested_list):
         # here nested lists have the following shape:
@@ -54,28 +48,22 @@ class SupervisedCaviarVision(Dataset):
 
         return flat_list
 
-    def preprocess_image(self, image, desired_image_size):
-        resized = cv2.resize(image, dsize=desired_image_size)
-        reshaped = np.transpose(resized, (2, 0, 1))
-
-        return torch.Tensor(reshaped).to(torch.float)
-
     def show_training_example(self, example_indices):
+        inverse_SE_mapping = {
+            0: "active",
+            1: "inactive",
+            2: "walking",
+            3: "running",
+        }
+
         fig, ax = plt.subplots(1, len(example_indices))
 
         for i, idx in enumerate(example_indices):
             image = self.input_images[idx]
             label = self.simple_event_labels[idx]
 
-            # torch uses (num_channels, height, width) so reshape to
-            # (height, width, num_channels), also cast to int for showing
-            image = torch.permute(image, (1, 2, 0)).to(torch.uint8)
-
-            # get the simple event label from its numeric value to set as title
-            label = inverse_simple_event_mapping[label.item()]
-
-            ax[i].set_title(label)
-            ax[i].imshow(image)
+            ax[i].set_title(inverse_SE_mapping[label.item()])
+            ax[i].imshow(torch.permute(image, (1, 2, 0)))
 
         plt.show()
 
@@ -90,49 +78,45 @@ class SupervisedCaviarVision(Dataset):
 
 
 if __name__ == "__main__":
-    caviar_root = "/home/yuzer/.cache/cached_path/3d7268fd95461fe356087696890c33afe4a1257e48773d5e3cc6e06d1f505a55.4baaf2515ddb1b1533af48a43c660a60fa029edfc3562069cb4afcbcdb9081e8-extracted/caviar_videos"
+    f1_score = torchmetrics.F1Score(task="multiclass", num_classes=4)
 
     dataset = SupervisedCaviarVision(
-        dataset_root=caviar_root,
         window_size=24,
         window_stride=24,
-        desired_image_size=(85, 85),
+        desired_image_size=(80, 80),
     )
 
-    f1_torchmetrics = torchmetrics.F1Score(task="multiclass", num_classes=4)
-
-    train_data, test_data = random_split(dataset, [0.8, 0.2])
-
+    train_data, test_data = random_split(dataset, [10620, 3540])
     train_dl = DataLoader(train_data, batch_size=256, shuffle=True)
     test_dl = DataLoader(test_data, batch_size=256, shuffle=True)
 
-    cnn = CaviarCNN(num_classes=4)
+    cnn = SupervisedCaviarCNN(num_classes=4)
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optimizers.Adam(cnn.parameters(), lr=1e-3)
     num_epochs = 20
-    print("Imma start trainin")
 
-    for epoch in range(num_epochs):
-        print(f"Epoch {epoch + 1}/{num_epochs} --- ", end="")
+    for epoch in track(range(num_epochs)):
+        print(f"Epoch {epoch + 1}/{num_epochs} \t --- ", end="")
         epoch_loss = 0
         cnn.train()
         for batch_idx, (inputs, labels) in enumerate(train_dl):
+            optimizer.zero_grad()
+
             outputs = cnn(inputs)
             loss = loss_fn(outputs, labels)
             epoch_loss += loss.item()
 
-            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-        print(f"done \t train loss: {round(epoch_loss, 4)}", end="")
+        print(f"\t train loss: {round(epoch_loss, 4)}")
 
     cnn.eval()
     for test_inputs, test_labels in test_dl:
         test_outputs = cnn(test_inputs)
-        f1_metrics = f1_torchmetrics(test_outputs, test_labels)
+        f1_metrics = f1_score(test_outputs, test_labels)
 
-    f1_metrics = f1_torchmetrics.compute()
+    f1_metrics = f1_score.compute()
     print(
-        f"\ttest F1: {round(f1_metrics.item(), 4)}",
+        f"Test F1: {round(f1_metrics.item(), 4)}",
     )

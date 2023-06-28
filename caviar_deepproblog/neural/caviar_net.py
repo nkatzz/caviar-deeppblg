@@ -68,7 +68,37 @@ class CaviarCNN(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.fc1 = nn.Linear(in_features=32 * 8 * 8, out_features=128)
         self.fc2 = nn.Linear(in_features=128, out_features=num_classes)
-        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, image_pairs: torch.Tensor, personID: Term, timestep: Constant):
+        image_pair_of_interest = image_pairs[int(timestep)]
+
+        if personID.functor == "p1":
+            cnn_input_image = image_pair_of_interest[0]
+        elif personID.functor == "p2":
+            cnn_input_image = image_pair_of_interest[1]
+        else:
+            raise ValueError("Parameter 'personID' should be either p1 or p2")
+
+        x = self.pool(self.relu(self.conv1(cnn_input_image)))
+        x = self.pool(self.relu(self.conv2(x)))
+        x = self.pool(self.relu(self.conv3(x)))
+        x = torch.flatten(x)
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+
+        return x
+
+
+class SupervisedCaviarCNN(nn.Module):
+    def __init__(self, num_classes):
+        super().__init__()
+        self.conv1 = nn.Conv2d(3, 8, (3, 3))
+        self.conv2 = nn.Conv2d(8, 16, (3, 3))
+        self.conv3 = nn.Conv2d(16, 32, (3, 3))
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(in_features=32 * 8 * 8, out_features=128)
+        self.fc2 = nn.Linear(in_features=128, out_features=num_classes)
 
     def forward(self, x):
         x = self.pool(self.relu(self.conv1(x)))

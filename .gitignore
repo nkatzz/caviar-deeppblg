@@ -1,4 +1,5 @@
 .venv/
+.vscode/
 __pycache__/
 caviar_deepproblog/data/vision_data/*
 !caviar_deepproblog/data/vision_data/.gitkeep

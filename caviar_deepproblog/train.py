@@ -15,6 +15,7 @@ import numpy as np
 import random
 import os
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 random.seed(42)
 np.random.seed(42)
@@ -62,16 +63,23 @@ test_dataset = CaviarVisionDPLDataset(
     complex_event="meeting",
 )
 
-
 loader = DataLoader(train_dataset, 1, False)
-
-
-# ------------------------------- THIS WILL CRASH -------------------------------
-# need to figure out how to pass distance between persons along with their images
-# currently assume it should be computed in the init of CaviarVisionDataset and
-# then passed along with the image tensor as part of one term? maybe this is handled
-# in the to_query or in the tensor_source __getitem__
-
 train_model(model, loader, 5, loss_function_name="cross_entropy")
 
 print(get_fact_accuracy(model, test_dataset))
+
+
+def show_random_example():
+    inverse_simple_event_mapping = {
+        0: "active",
+        1: "inactive",
+        2: "walking",
+        3: "running",
+    }
+
+    example_image = dataset.input_images[55][20][1]
+    example_label = dataset.simple_event_labels[55][20][1]
+    plt.figure()
+    plt.title(inverse_simple_event_mapping[example_label])
+    plt.imshow(torch.permute(example_image, (1, 2, 0)))
+    plt.show()
