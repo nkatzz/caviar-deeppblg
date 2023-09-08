@@ -72,7 +72,7 @@ class CaviarMLP(nn.Module):
         if personID.functor == "p1":
             mlp_input = frame[:5]
         elif personID.functor == "p2":
-            mlp_input = frame[5:-1]
+            mlp_input = frame[5:-2]
         else:
             raise ValueError("Parameter 'personID' should be either p1 or p2")
 
