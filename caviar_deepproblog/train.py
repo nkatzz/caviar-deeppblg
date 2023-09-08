@@ -23,6 +23,8 @@ caviar_net = CaviarNet(4, 5, 128, 1)
 network = Network(caviar_net, "caviar_net")
 network.optimizer = torch.optim.Adam(caviar_net.parameters(), lr=1e-5)
 
+# test
+
 model = MarkovModel(
     # "/home/whatever/programms/caviar-deepproblog/caviar_deepproblog/problog_files/caviar.pl",
     "/home/nkatz/dev/caviar-deepproblog/caviar_deepproblog/problog_files/caviar.pl",
