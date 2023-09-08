@@ -16,7 +16,8 @@ class MarkovModel(Model):
                 "distance",
                 body.args[0],
                 *body.args[1].args,
-                body.args[2],
+                int(body.args[2]) + 1,
+                # body.args[2],
                 Constant(self.get_tensor(body.args[0])[int(body.args[2])][-1].item()),
             )
         )
