@@ -1,29 +1,28 @@
 import torch
+import torch.nn as nn
 from problog.logic import Constant, Term
 
 
-class CaviarNet(torch.nn.Module):
-    def __init__(
-        self, num_classes: int, input_size: int, hidden_size: int, num_layers: int
-    ):
+class CaviarNet(nn.Module):
+    def __init__(self, num_classes, input_size, hidden_size, num_layers):
         super().__init__()
         self.num_classes = num_classes
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
-        self.lstm = torch.nn.LSTM(
+        self.lstm = nn.LSTM(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             batch_first=True,
         )
 
-        self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(in_features=hidden_size, out_features=128),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=128, out_features=num_classes),
-            torch.nn.Softmax(dim=1),
+        self.mlp = nn.Sequential(
+            nn.Linear(in_features=hidden_size, out_features=128),
+            nn.ReLU(),
+            nn.Linear(in_features=128, out_features=num_classes),
+            nn.Softmax(dim=1),
         )
 
     def forward(self, video_tensor: torch.Tensor, personID: Term, timestep: Constant):
@@ -39,7 +38,7 @@ class CaviarNet(torch.nn.Module):
         elif personID.functor == "p2":
             # For the second person ignore the last feature since it is the distance.
             # We use it elsewhere no need for the NN to take it into account.
-            lstm_input = video_tensor[:, 5:-2]
+            lstm_input = video_tensor[:, 5:-1]
         else:
             raise ValueError("Parameter 'personID' should be either p1 or p2")
 
@@ -55,3 +54,30 @@ class CaviarNet(torch.nn.Module):
         # within the same LSTM evaluation). For this reason, each forward pass returns
         # only a single timestep from the entire generated output. Wasteful and sad.
         return output[int(timestep)]
+
+
+class CaviarMLP(nn.Module):
+    def __init__(self, input_size, num_classes):
+        super().__init__()
+
+        self.relu = nn.ReLU()
+        self.fc1 = nn.Linear(input_size, 32)
+        self.fc2 = nn.Linear(32, 64)
+        self.fc3 = nn.Linear(64, num_classes)
+        self.softmax = nn.Softmax(dim=0)
+
+    def forward(self, video_tensor, personID, timestep):
+        frame = video_tensor[int(timestep), :]
+
+        if personID.functor == "p1":
+            mlp_input = frame[:5]
+        elif personID.functor == "p2":
+            mlp_input = frame[5:-1]
+        else:
+            raise ValueError("Parameter 'personID' should be either p1 or p2")
+
+        x = self.relu(self.fc1(mlp_input))
+        x = self.relu(self.fc2(x))
+        x = self.softmax(self.fc3(x))
+
+        return x
