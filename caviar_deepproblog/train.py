@@ -4,6 +4,7 @@ from deepproblog.train import train_model
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_fact_accuracy
+from caviar_deepproblog.markov_models.graph_semiring import BoundEntropySemiring
 from caviar_deepproblog.markov_models.markov_model import MarkovModel
 from caviar_deepproblog.neural.caviar_net import CaviarCNN
 from caviar_deepproblog.data.caviar_vision_data import CaviarVisionDataset
@@ -44,11 +45,11 @@ network = Network(caviar_cnn, "caviar_cnn")
 network.optimizer = torch.optim.Adam(caviar_cnn.parameters(), lr=0.001)
 
 model = MarkovModel(
-    os.path.join(os.getcwd(), "caviar_deepproblog/problog_files/caviar.pl"),
+    os.path.join(os.getcwd(), "caviar_deepproblog/problog_files/caviar_simplified.pl"),
     [network],
 )
 
-model.set_engine(ExactEngine(model))
+model.set_engine(ExactEngine(model), semiring=BoundEntropySemiring)
 model.add_tensor_source("train", CaviarImagePairs(input_images_train))
 model.add_tensor_source("test", CaviarImagePairs(input_images_test))
 
