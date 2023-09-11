@@ -435,7 +435,7 @@ class CaviarVisionDataset:
             for sequence in range(bb_features.shape[0]):
                 for timestep in range(bb_features.shape[1]):
                     distances_file.write(
-                        "distance({}, p1, p2, {}, {:.3f}).".format(
+                        "distance(tensor(train({})), p1, p2, {}, {:.3f}).".format(
                             sequence,
                             timestep,
                             distances[sequence, timestep],

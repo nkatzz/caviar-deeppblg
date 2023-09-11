@@ -1,11 +1,14 @@
 import torch
+from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.train import train_model
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_fact_accuracy
+
 from caviar_deepproblog.markov_models.graph_semiring import BoundEntropySemiring
 from caviar_deepproblog.markov_models.markov_model import MarkovModel
+
 from caviar_deepproblog.neural.caviar_net import CaviarCNN
 from caviar_deepproblog.data.caviar_vision_data import CaviarVisionDataset
 from caviar_deepproblog.data.dpl_caviar_interface import (
@@ -18,6 +21,23 @@ import os
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
+
+def show_random_example():
+    inverse_simple_event_mapping = {
+        0: "active",
+        1: "inactive",
+        2: "walking",
+        3: "running",
+    }
+
+    example_image = dataset.input_images[55][20][1]
+    example_label = dataset.simple_event_labels[55][20][1]
+    plt.figure()
+    plt.title(inverse_simple_event_mapping[example_label])
+    plt.imshow(torch.permute(example_image, (1, 2, 0)))
+    plt.show()
+
+
 random.seed(42)
 np.random.seed(42)
 torch.manual_seed(42)
@@ -28,6 +48,8 @@ dataset = CaviarVisionDataset(
     preprocess=True,
     desired_image_size=(80, 80),
 )
+
+# show_random_example()
 
 (
     input_images_train,
@@ -44,7 +66,7 @@ caviar_cnn = CaviarCNN(num_classes=4)
 network = Network(caviar_cnn, "caviar_cnn")
 network.optimizer = torch.optim.Adam(caviar_cnn.parameters(), lr=0.001)
 
-model = MarkovModel(
+model = Model(
     os.path.join(os.getcwd(), "caviar_deepproblog/problog_files/caviar_simplified.pl"),
     [network],
 )
@@ -65,22 +87,6 @@ test_dataset = CaviarVisionDPLDataset(
 )
 
 loader = DataLoader(train_dataset, 1, False)
-train_model(model, loader, 5, loss_function_name="cross_entropy")
+train_model(model, loader, 10, loss_function_name="cross_entropy")
 
 print(get_fact_accuracy(model, test_dataset))
-
-
-def show_random_example():
-    inverse_simple_event_mapping = {
-        0: "active",
-        1: "inactive",
-        2: "walking",
-        3: "running",
-    }
-
-    example_image = dataset.input_images[55][20][1]
-    example_label = dataset.simple_event_labels[55][20][1]
-    plt.figure()
-    plt.title(inverse_simple_event_mapping[example_label])
-    plt.imshow(torch.permute(example_image, (1, 2, 0)))
-    plt.show()

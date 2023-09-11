@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from problog.logic import Constant, Term
+import matplotlib.pyplot as plt
 
 
 class CaviarNet(nn.Module):
@@ -78,6 +79,10 @@ class CaviarCNN(nn.Module):
             cnn_input_image = image_pair_of_interest[1]
         else:
             raise ValueError("Parameter 'personID' should be either p1 or p2")
+
+        # plt.figure()
+        # plt.imshow(torch.permute(cnn_input_image, (1, 2, 0)))
+        # plt.show()
 
         x = self.pool(self.relu(self.conv1(cnn_input_image)))
         x = self.pool(self.relu(self.conv2(x)))

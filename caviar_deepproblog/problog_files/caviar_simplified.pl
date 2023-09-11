@@ -1,4 +1,6 @@
-nn(caviar_MLP, [Video, P, T], SE, [active, inactive]) :: happensAt(Video, P, T, SE).
+:- consult('/home/yuzer/ncsr/dpl-benchmark/caviar-deepproblog/caviar_deepproblog/data/vision_data/spatial_info.pl').
+
+nn(caviar_cnn, [Video, P, T], SE, [active, inactive, walking, running]) :: happensAt(Video, P, T, SE).
 
 holdsAt(Video, meeting(P1, P2), T) :-
     happensAt(Video, P1, T, active),
@@ -12,5 +14,3 @@ holdsAt(Video, meeting(P1, P2), T) :-
 
 
 is_close(Video, P1, P2, T, D) :- distance(Video, P1, P2, T, D1), D1 =< D.
-
-distance(tensor(train(0)),p1,p2,0,0).
