@@ -4,7 +4,7 @@ import pickle
 
 with open(
         # "/home/whatever/programms/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
-        "/home/nkatz/dev/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
+        "/home/nkatz/caviar-deepproblog/caviar_deepproblog/data/caviar_folds.pkl",
         "rb",
 ) as data_file:
     caviar_folds = pickle.load(data_file)
