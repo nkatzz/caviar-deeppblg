@@ -1,2 +1,4 @@
 .venv/
+.vscode/
+vision_data/
 __pycache__/

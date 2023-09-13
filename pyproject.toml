@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "caviar_deepproblog"}]
 
 [tool.poetry.dependencies]
-python = "=3.10.0"
+python = ">=3.10.0"
 torchvision = "0.13.1"
 deepproblog = "^2.0.4"
 pydotplus = "^2.0.2"
