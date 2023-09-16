@@ -5,32 +5,32 @@ holdsAt(Video, F, T) :- previous(T1, T), previous_step(Video, F, T1), \+terminat
 
 %moving complex event
 
-initiatedAt(moving(P1, P2), Video, T):-
-    happensAt(Video, P1, T, walking),
-    happensAt(Video, P2, T, walking),
-    orientationMove(Video, P1, P2, T),
-    is_close(Video, P1, P2, T, 34).
+%initiatedAt(moving(P1, P2), Video, T):-
+%    happensAt(Video, P1, T, walking),
+%    happensAt(Video, P2, T, walking),
+%    orientationMove(Video, P1, P2, T),
+%    is_close(Video, P1, P2, T, 34).
 
-terminatedAt(moving(P1,P2), Video, T) :-
-    happensAt(Video, P1, T, walking), is_far(Video, P1, P2, T, 34).
+%terminatedAt(moving(P1,P2), Video, T) :-
+%    happensAt(Video, P1, T, walking), is_far(Video, P1, P2, T, 34).
 
-terminatedAt(moving(P1,P2), Video, T) :-
-    happensAt(Video, P2, T, walking), is_far(Video, P1, P2, T, 34).
+%terminatedAt(moving(P1,P2), Video, T) :-
+%    happensAt(Video, P2, T, walking), is_far(Video, P1, P2, T, 34).
 
-terminatedAt(moving(P1,P2),T) :-
-    happensAt(Video, P1, T, active), happensAt(Video, P2, T, active).
+%terminatedAt(moving(P1,P2),T) :-
+%    happensAt(Video, P1, T, active), happensAt(Video, P2, T, active).
 
-terminatedAt(moving(P1,P2),T) :-
-    happensAt(Video, P1, T, active), happensAt(Video, P2, T, inactive).
+%terminatedAt(moving(P1,P2),T) :-
+%    happensAt(Video, P1, T, active), happensAt(Video, P2, T, inactive).
 
-terminatedAt(moving(P1,P2),T) :-
-    happensAt(Video, P1, T, inactive), happensAt(Video, P2, T, active).
+%terminatedAt(moving(P1,P2),T) :-
+%    happensAt(Video, P1, T, inactive), happensAt(Video, P2, T, active).
 
-terminatedAt(moving(P1,P2),T) :-
-    happensAt(Video, P1, T, running).
+%terminatedAt(moving(P1,P2),T) :-
+%    happensAt(Video, P1, T, running).
 
-terminatedAt(moving(P1,P2),T) :-
-    happensAt(Video, P2, T, running).
+%terminatedAt(moving(P1,P2),T) :-
+%    happensAt(Video, P2, T, running).
 
 
 %meeting complex event

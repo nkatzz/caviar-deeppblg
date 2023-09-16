@@ -11,11 +11,11 @@ from problog.logic import Term
 class BoundEntropySemiring(GraphSemiring):
     @staticmethod
     def cross_entropy(
-        result: Result,
-        target: float,
-        weight: float,
-        q: Optional[Term] = None,
-        eps: float = 1e-12,
+            result: Result,
+            target: float,
+            weight: float,
+            q: Optional[Term] = None,
+            eps: float = 1e-12,
     ) -> float:
         result = result.result
         if len(result) == 0:
@@ -30,23 +30,31 @@ class BoundEntropySemiring(GraphSemiring):
                 )
         else:
             p = result[q]
+
+        # print(f'p is: {p}, type: {type(p)}')
+
         if type(p) is float:
+            if p > 1.0: p = 1.0
+            if p < 0.0: p = 0.0
             loss = (
-                -(target * math.log(p + eps) + (1.0 - target) * math.log(1.0 - p + eps))
-                * weight
+                    -(target * math.log(p + eps) + (1.0 - target) * math.log(1.0 - p + eps))
+                    * weight
             )
         else:
+            # Ensure that p remains is [0, 1].
+            # p values > 1 have been observed causing nan in the log
+            p = torch.clamp(p, 0, 1)
             if target == 1.0:
                 loss = -torch.log(p + eps) * weight
             elif target == 0.0:
                 loss = -torch.log(1.0 - p + eps) * weight
             else:
                 loss = (
-                    -(
-                        target * torch.log(p + eps)
-                        + (1.0 - target) * torch.log(1.0 - p + eps)
-                    )
-                    * weight
+                        -(
+                                target * torch.log(p + eps)
+                                + (1.0 - target) * torch.log(1.0 - p + eps)
+                        )
+                        * weight
                 )
             loss.backward(retain_graph=True)
         return float(loss)

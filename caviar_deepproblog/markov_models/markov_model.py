@@ -27,18 +27,13 @@ class MarkovModel(Model):
 
     def solve(self, batch: Sequence[Query]) -> list[Result]:
         result = super().solve(batch)
-
         self.ac_total_time += result[0].ground_time + result[0].compile_time + result[0].eval_time
-        # print(self.ac_total_time)
-
         (body, probability) = list(result[0].result.items())[0]
 
         start = time()
         program = copy.deepcopy(self.program)
         end = time()
         self.deep_copy_time += end - start
-
-        # print(self.ac_total_time + self.deep_copy_time)
 
         program.add_fact(
             Term(
